@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container">
+    <!-- Sidebar Toggle Button -->
+    <button class="btn btn-primary mt-5" type="button" data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Sidebar Offcanvas -->
+    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions"
+        aria-labelledby="offcanvasWithBothOptionsLabel">
+        <div class="offcanvas-header">
+            <h1 class="display-5 m-0 text-primary">Opti<span class="text-secondary">sec</span></h1>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="list-group">
+                <li class="list-group-item"><a href="{% url "dashboard" %}" class="nav-item nav-link">Dashboard</a></li>
+                <li class="list-group-item"><a href="{% url "upload_image" %}" class="nav-item nav-link">Upload Image</a></li>
+                <li class="list-group-item"><a href="{% url "upload_doc" %}" class="nav-item nav-link">Upload Document</a></li>
+                <li class="list-group-item"><a href="{% url "upload_pdf" %}" class="nav-item nav-link">Upload PDF</a></li>
+                <li class="list-group-item"><a href="{% url "upload_video" %}" class="nav-item nav-link">Upload Video</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Messages Display -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Upload Form -->
+    <div class="row mt-5">
+        <div class="card col-lg-6 mx-2">
+            <div class="card-body">
+                <form action="{% url 'upload_doc' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <h5 class="card-title">Upload DOCX <span class="text-danger">*</span></h5>
+                    <input type="file" name="document" class="form-control" accept=".docx" required>
+                    <h5 class="mt-3 text-dark">Enter Security Password</h5>
+                    <input type="password" name="password" class="form-control" required>
+                    <button class="btn btn-primary mt-4" type="submit">Upload DOCX</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Uploaded Documents Table -->
+    <div class="mt-5">
+        <h5>Uploaded Documents</h5>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Filename</th>
+                    <th>Uploaded On</th>
+                    <th>Download</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in uploaded_docs %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ doc.filename }}</td>
+                    <td>{{ doc.upload_date|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#authModal{{ doc.id }}">
+                            Download
+                        </button>
+                        <!-- Authentication Modal for Download -->
+                        <div class="modal fade" id="authModal{{ doc.id }}" tabindex="-1" aria-labelledby="authModalLabel{{ doc.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Enter PIN to Download</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form action="{% url 'download_doc' doc.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <label for="pin{{ doc.id }}">Enter PIN:</label>
+                                            <input type="password" name="pin" id="pin{{ doc.id }}" class="form-control" required>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-primary">Download</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No documents uploaded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Merged Document Download Section -->
+    <div class="mt-5">
+        <h5>Merged Document</h5>
+        <a href="{% url 'merge_word_documents' %}" class="btn btn-success">Download Merged DOCX</a>
+    </div>
+</div>
+
+{% endblock body %}

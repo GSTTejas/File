@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container">
+    <div class="container">
+        <button class="btn btn-primary mt-5" type="button" data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">Menu</button>
+        <div class="offcanvas offcanvas-start" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
+            id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
+        </div>
+
+        <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions"
+            aria-labelledby="offcanvasWithBothOptionsLabel">
+            <div class="offcanvas-header">
+                <h1 class="display-5 m-0 text-primary">Opti<span class="text-secondary">sec</span></h1>
+                <hr>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                    aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <ul class="list-group">
+                    <li class="list-group-item"><a href="{% url "dashboard" %}" class="nav-item nav-link">Dashboard</a></li>
+                    <li class="list-group-item"><a href="{% url "upload_image" %}" class="nav-item nav-link">Upload Image</a></li>
+                    <li class="list-group-item"><a href="{% url "upload_doc" %}" class="nav-item nav-link">Upload Document</a></li>
+                    <li class="list-group-item"><a href="{% url "upload_pdf" %}" class="nav-item nav-link">Upload PDF</a></li>
+                    <li class="list-group-item"><a href="{% url "upload_video" %}" class="nav-item nav-link">Upload Video</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row col-lg-12 mt-5 border border-1 border-rounded">
+            <table class="table table-striped">
+                <tr>
+                    <th>File</th>
+                    <th>Image Name</th>
+                    <th>Date & Time</th>
+                    <th>Action</th>
+                </tr>
+                {% if user_images %}
+                {% for image in user_images %}
+                <tr>
+                    <td><i class="fa fa-image"></i></td>
+                    <td>{{ image.random_id }}.png</td>
+                    <td>{{ image.date_time }}</td>
+                    <td>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#modal_{{ image.random_id }}">
+                            Download
+                        </button>
+                    </td>
+                </tr>
+        
+                <!-- Modal (Unique ID for each image row) -->
+                <div class="modal fade" id="modal_{{ image.random_id }}" tabindex="-1"
+                    aria-labelledby="modalLabel_{{ image.random_id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalLabel_{{ image.random_id }}">File Download</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form action="{% url 'download_merged_image' %}" method="post">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <label>
+                                        <h6>Image ID</h6>
+                                    </label>
+                                    <input type="text" class="form-control" name="file_id" value="{{ image.random_id }}" readonly>
+                                    <label class="mt-3">
+                                        <h6>Password <span class="text-danger">*</span></h6>
+                                    </label>
+                                    <input type="password" class="form-control" name="password"
+                                        placeholder="Enter Password" required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Download</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="4">No Images Found</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+
+    </div>
+</div>
+
+{% endblock body %}
